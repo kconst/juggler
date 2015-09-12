@@ -16,7 +16,7 @@
             generateRatings : generateRatings
         };
 
-    fs.readFile("jugglefest.txt", "utf8", function (error, text) {
+    fs.readFile("juggler.txt", "utf8", function (error, text) {
         var dataArr = text.split('\r\n\r\n');
 
         stringData.circuits = dataArr[0];
