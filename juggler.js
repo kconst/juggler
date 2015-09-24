@@ -17,7 +17,34 @@
             generateRatings : generateRatings
         };
 
-    fs.readFile("jugglefest.txt", "utf8", function (error, text) {
+    function LinkedList() {
+        this.head = null;
+        this.length = 0;
+
+    }
+
+    LinkedList.prototype.push = function(value) {
+        var node = {
+            value : value,
+            next : null
+        }, current;
+
+        if (!this.head) {
+            this.head = node;
+        } else {
+            current = this.head;
+
+            while(current.next) {
+                current = current.next;
+            }
+
+            current.next = node;
+        }
+
+        this.length += 1;
+    };
+
+/*    fs.readFile("jugglefest.txt", "utf8", function (error, text) {
         var dataArr = text.split('\n\n');
 
         stringData.circuits = dataArr[0];
@@ -112,7 +139,7 @@
              console.log("file written!");
          });
         //console.log(resultString.join(''));
-    });
+    });*/
 
     function assignJuggler(juggler, index) {
         var assignment;
