@@ -5,46 +5,20 @@
             circuits : [],
             jugglers : []
         },
-        parsedData = {
-            circuits : [],
-            jugglers : []
-        },
         groupSize,
         resultString = [],
         utils = {
             calcDot : calcDot,
             assignJuggler : assignJuggler,
             generateRatings : generateRatings
-        };
+        },
+        LinkedList = require('./LinkedList');
 
-    function LinkedList() {
-        this.head = null;
-        this.length = 0;
+    var ll = new LinkedList();
+    var circuitsLL = new LinkedList();
+    var jugglersLL = new LinkedList();
 
-    }
-
-    LinkedList.prototype.push = function(value) {
-        var node = {
-            value : value,
-            next : null
-        }, current;
-
-        if (!this.head) {
-            this.head = node;
-        } else {
-            current = this.head;
-
-            while(current.next) {
-                current = current.next;
-            }
-
-            current.next = node;
-        }
-
-        this.length += 1;
-    };
-
-/*    fs.readFile("jugglefest.txt", "utf8", function (error, text) {
+    fs.readFile("jugglefest.txt", "utf8", function (error, text) {
         var dataArr = text.split('\n\n');
 
         stringData.circuits = dataArr[0];
@@ -58,13 +32,20 @@
         stringData.circuits.forEach(function (e, i, arr) {
             var values = e.match(/(?:)(\d+)/g);
 
-            arr[i] = {
+            /*arr[i] = {
                 id: 'C' + values[0],
                     H: values[1],
                 E: values[2],
                 P: values[3],
                 group: []
-            };
+            };*/
+            circuitsLL.push({
+                id: 'C' + values[0],
+                H: values[1],
+                E: values[2],
+                P: values[3],
+                group: []
+            });
         });
 
         stringData.jugglers.forEach(function (e, i, arr) {
@@ -86,7 +67,8 @@
                 circuitRating : []
             };
 
-            arr[i] = juggler;
+//            arr[i] = juggler;
+            jugglersLL.push(juggler);
         });
 
         // number of jugglers assigned to a circuit should be the number of jugglers divided by the number of circuits
@@ -94,7 +76,8 @@
 
 
         // assign jugglers to circuits first by preference then bump for better fits
-        stringData.jugglers.forEach(utils.assignJuggler);
+//        stringData.jugglers.forEach(utils.assignJuggler);
+        jugglersLL.forEach(utils.assignJuggler);
 
         // sort circuit jugglers by dot rating
         stringData.circuits.forEach(function (circuit, i) {
@@ -139,10 +122,12 @@
              console.log("file written!");
          });
         //console.log(resultString.join(''));
-    });*/
+    });
 
     function assignJuggler(juggler, index) {
         var assignment;
+
+        juggler = juggler.value;
 
         if (juggler.assigned === undefined) {
             // ignore last whitespace entry
@@ -150,24 +135,27 @@
                 return;
             }
             assignment = juggler.circuitPreference.some(function(preference){
-                if (stringData.circuits[preference].group.length < groupSize) {
+//                if (stringData.circuits[preference].group.length < groupSize) {
+                if (circuitsLL.get(preference).group.length < groupSize) {
                     juggler.assigned = preference;
-                    stringData.circuits[preference].group.push({
+                    circuitsLL.get(preference).group.push({
                         id : juggler.id,
                         index : index
                     });
 
                     return true;
                 } else {
-                    return stringData.circuits[preference].group.some(function(existingJuggler, existingIndex, currentGroup){
+                    return circuitsLL.get(preference).group.some(function(existingJuggler, existingIndex, currentGroup){
                         var /*existingJuggler = stringData.jugglers.filter(function(e){return e.id === existingJuggler.id})[0],*/
+                            circuitPreference = circuitsLL.get(this.preference),
+                            existingJugRating = jugglersLL.get(existingJuggler.index),
                             jugRating = calcDot([
                                 [ juggler.H, juggler.E, juggler.P ],
-                                [ stringData.circuits[this.preference].H, stringData.circuits[this.preference].E, stringData.circuits[this.preference].P ]
+                                [ circuitPreference.H, circuitPreference.E, circuitPreference.P ]
                             ]),
                             existingRating = calcDot([
-                                [ stringData.jugglers[existingJuggler.index].H, stringData.jugglers[existingJuggler.index].E, stringData.jugglers[existingJuggler.index].P ],
-                                [ stringData.circuits[this.preference].H, stringData.circuits[this.preference].E, stringData.circuits[this.preference].P ]
+                                [ existingJugRating.H, existingJugRating.E, existingJugRating.P ],
+                                [ circuitPreference.H, circuitPreference.E, circuitPreference.P ]
                             ]),
                             removedIndex = 0; //default
 
@@ -200,7 +188,7 @@
 
             // if all its preferred circuits were empty then just chuck it into an empty circuit
             if (!assignment) {
-                stringData.circuits.some(function(circuit, index){
+                circuitsLL.some(function(circuit, index){
                     if (circuit.group.length < groupSize) {
                         juggler.assigned = index;
                         circuit.group.push({
